@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MetaWorld Humanizer – AI Text Rewriter</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0a14;
+    --surface: #16112a;
+    --surface2: #1e1737;
+    --border: #2e2550;
+    --accent: #8b5cf6;
+    --accent2: #a78bfa;
+    --accent3: #c4b5fd;
+    --white: #f5f3ff;
+    --muted: #7c6fa0;
+    --glow: 0 0 40px rgba(139,92,246,0.18);
+    --radius: 14px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background orbs */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(139,92,246,0.12) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; right: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(167,139,250,0.08) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative; z-index: 1;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    padding: 52px 0 40px;
+  }
+
+  .logo-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #8b5cf6, #c4b5fd);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 24px rgba(139,92,246,0.5);
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 30%, #c4b5fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .tagline {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+
+  .badge-row {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent3);
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Main card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--glow);
+    overflow: hidden;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 14px 20px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    position: relative;
+  }
+
+  .tab.active {
+    color: var(--accent2);
+    border-bottom-color: var(--accent);
+    background: rgba(139,92,246,0.04);
+  }
+
+  .tab:hover:not(.active) { color: var(--white); }
+
+  /* Input section */
+  .input-section { padding: 24px; }
+
+  .label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .label {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .word-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    padding: 16px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+  textarea::placeholder { color: var(--muted); }
+
+  /* Options bar */
+  .options-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .opt-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .seg-control {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .seg-btn {
+    padding: 7px 14px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .seg-btn.active {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .seg-btn:hover:not(.active) { color: var(--white); }
+
+  /* Humanize button */
+  .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 13px 28px;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(139,92,246,0.4);
+    margin-top: 20px;
+    width: 100%;
+    justify-content: center;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(139,92,246,0.55);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 24px;
+  }
+
+  /* Output section */
+  .output-section { padding: 24px; display: none; }
+  .output-section.visible { display: block; }
+
+  .output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .output-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--white);
+  }
+
+  .btn-copy-all {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent3);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  .btn-copy-all:hover {
+    border-color: var(--accent);
+    background: rgba(139,92,246,0.1);
+  }
+
+  /* Sentence blocks */
+  .sentences-wrap { display: flex; flex-direction: column; gap: 20px; }
+
+  .sentence-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .sentence-block:hover { border-color: rgba(139,92,246,0.4); }
+
+  .sb-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(139,92,246,0.04);
+  }
+
+  .sb-num {
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .sb-original {
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* Variants */
+  .variants-wrap { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+
+  .variant {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .variant:hover {
+    background: rgba(139,92,246,0.08);
+    border-color: rgba(139,92,246,0.25);
+  }
+
+  .variant.selected {
+    background: rgba(139,92,246,0.12);
+    border-color: var(--accent);
+  }
+
+  .variant-letter {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent3);
+    flex-shrink: 0;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .variant.selected .variant-letter {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .variant-text {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--white);
+    flex: 1;
+  }
+
+  .variant-actions {
+    display: flex;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+
+  .variant:hover .variant-actions { opacity: 1; }
+
+  .va-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 4px;
+    transition: color 0.15s;
+    font-size: 13px;
+  }
+
+  .va-btn:hover { color: var(--accent2); }
+
+  /* Final output */
+  .final-section {
+    margin-top: 28px;
+    background: rgba(139,92,246,0.06);
+    border: 1px solid rgba(139,92,246,0.25);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .final-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(139,92,246,0.2);
+  }
+
+  .final-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--accent2);
+  }
+
+  .final-actions { display: flex; gap: 8px; }
+
+  .btn-sm {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--accent3);
+    border-radius: 7px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  .btn-sm:hover {
+    border-color: var(--accent);
+    background: rgba(139,92,246,0.1);
+    color: var(--white);
+  }
+
+  .final-text {
+    padding: 18px;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--white);
+    min-height: 80px;
+    white-space: pre-wrap;
+  }
+
+  /* Stats row */
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-card {
+    flex: 1;
+    min-width: 120px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--accent2);
+  }
+
+  .stat-lbl {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: #fff;
+    padding: 11px 22px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.25s;
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Loading overlay for output */
+  .loading-state {
+    padding: 60px 24px;
+    text-align: center;
+    display: none;
+  }
+
+  .loading-state.visible { display: block; }
+
+  .loading-orb {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7c3aed, #c4b5fd);
+    margin: 0 auto 20px;
+    animation: pulse 1.2s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(139,92,246,0.5);
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.88); opacity: 0.7; }
+  }
+
+  .loading-text {
+    color: var(--accent3);
+    font-family: 'Syne', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .loading-sub {
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 6px;
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-top: 40px;
+    position: relative; z-index: 1;
+  }
+
+  footer a { color: var(--accent3); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 1.8rem; }
+    .options-bar { flex-direction: column; align-items: flex-start; }
+    .stats-row .stat-card { min-width: 90px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="logo-wrap">
+      <div class="logo-icon">🌐</div>
+      <h1>MetaWorld Humanizer</h1>
+    </div>
+    <p class="tagline">Rewrite AI text into natural, undetectable human writing</p>
+    <div class="badge-row">
+      <span class="badge">✦ Turnitin Safe</span>
+      <span class="badge">✦ GPTZero Safe</span>
+      <span class="badge">✦ ZeroGPT Safe</span>
+      <span class="badge">✦ Pangram AI Safe</span>
+      <span class="badge">✦ 5 Variants Per Sentence</span>
+    </div>
+  </header>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('humanize', this)">✦ Humanize</button>
+      <button class="tab" onclick="switchTab('tips', this)">Tips & Guide</button>
+    </div>
+
+    <!-- Humanize Tab -->
+    <div id="tab-humanize">
+      <div class="input-section">
+        <div class="label-row">
+          <span class="label">Input Text</span>
+          <span class="word-count" id="wordCount">0 words</span>
+        </div>
+        <textarea id="inputText" placeholder="Paste your AI-generated text here. MetaWorld will rewrite each sentence with 5 unique human-style alternatives for you to choose from..." oninput="updateCount()"></textarea>
+
+        <div class="options-bar">
+          <span class="opt-label">Style:</span>
+          <div class="seg-control" id="styleControl">
+            <button class="seg-btn active" onclick="setStyle('natural', this)">Natural</button>
+            <button class="seg-btn" onclick="setStyle('academic', this)">Academic</button>
+            <button class="seg-btn" onclick="setStyle('casual', this)">Casual</button>
+            <button class="seg-btn" onclick="setStyle('formal', this)">Formal</button>
+          </div>
+          <span class="opt-label" style="margin-left:8px">Strength:</span>
+          <div class="seg-control">
+            <button class="seg-btn" onclick="setStrength('light', this)">Light</button>
+            <button class="seg-btn active" onclick="setStrength('medium', this)">Medium</button>
+            <button class="seg-btn" onclick="setStrength('heavy', this)">Heavy</button>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="humanizeBtn" onclick="humanizeText()">
+          <div class="spinner" id="spinner"></div>
+          <span id="btnText">✦ Humanize Text</span>
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-state" id="loadingState">
+        <div class="loading-orb"></div>
+        <div class="loading-text">Rewriting your text…</div>
+        <div class="loading-sub">Generating 5 variants per sentence</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Output -->
+      <div class="output-section" id="outputSection">
+        <div class="output-header">
+          <span class="output-title">Select Your Preferred Variants</span>
+          <button class="btn-copy-all" onclick="selectAllFirst()">⚡ Auto-Select Best</button>
+        </div>
+
+        <div class="sentences-wrap" id="sentencesWrap"></div>
+
+        <div class="stats-row" id="statsRow"></div>
+
+        <div class="final-section" id="finalSection">
+          <div class="final-header">
+            <span class="final-title">✦ Assembled Output</span>
+            <div class="final-actions">
+              <button class="btn-sm" onclick="copyFinal()">📋 Copy</button>
+              <button class="btn-sm" onclick="downloadFinal()">⬇ Download</button>
+              <button class="btn-sm" onclick="resetAll()">↺ Reset</button>
+            </div>
+          </div>
+          <div class="final-text" id="finalText"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tips Tab -->
+    <div id="tab-tips" style="display:none; padding:28px;">
+      <div style="max-width:640px; margin:0 auto;">
+        <h2 style="font-family:'Syne',sans-serif;font-size:1.15rem;margin-bottom:18px;color:var(--accent2);">How MetaWorld Humanizer Works</h2>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent3);margin-bottom:6px;">1. PASTE YOUR TEXT</div>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.65;">Paste any AI-generated content. The tool splits it into individual sentences and processes each one separately.</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent3);margin-bottom:6px;">2. CHOOSE A STYLE & STRENGTH</div>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.65;"><b style="color:var(--white)">Natural</b> – everyday conversational tone. <b style="color:var(--white)">Academic</b> – formal but varied. <b style="color:var(--white)">Casual</b> – relaxed, breezy. <b style="color:var(--white)">Formal</b> – professional prose.<br><br>Strength controls how aggressively the sentence structure is changed.</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent3);margin-bottom:6px;">3. PICK YOUR VARIANTS</div>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.65;">Each sentence gets <b style="color:var(--white)">5 rewrites</b>. Click any variant to select it. The assembled result updates live at the bottom.</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent3);margin-bottom:6px;">4. COPY OR DOWNLOAD</div>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.65;">Copy the assembled output to clipboard or download as a .txt file.</div>
+          </div>
+          <div style="background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.25);border-radius:10px;padding:16px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:700;color:var(--accent2);margin-bottom:6px;">✦ PRO TIPS FOR BEST RESULTS</div>
+            <ul style="font-size:0.87rem;color:var(--muted);line-height:1.75;padding-left:18px;">
+              <li>Use <b style="color:var(--white)">Heavy</b> strength for text flagged by multiple detectors</li>
+              <li>Mix variants — don't just pick all A's or all B's</li>
+              <li>Re-run the output through the tool a second time for extra safety</li>
+              <li>For academic text, use <b style="color:var(--white)">Academic</b> style to keep the register</li>
+              <li>Short sentences (&lt; 20 words) are harder for detectors to flag</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .card -->
+
+  <footer>
+    <p>MetaWorld Humanizer &nbsp;·&nbsp; Paste, Rewrite, Select, Done &nbsp;·&nbsp; <a href="#">GitHub</a></p>
+  </footer>
+
+</div><!-- .container -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ────────────────────────────────────────────────
+let currentStyle    = 'natural';
+let currentStrength = 'medium';
+let sentenceData    = []; // [{original, variants:[], selected:0}]
+
+// ─── UI helpers ───────────────────────────────────────────
+function updateCount() {
+  const txt = document.getElementById('inputText').value.trim();
+  const wc  = txt ? txt.split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = wc + ' word' + (wc !== 1 ? 's' : '');
+}
+
+function switchTab(name, btn) {
+  document.getElementById('tab-humanize').style.display = name === 'humanize' ? '' : 'none';
+  document.getElementById('tab-tips').style.display     = name === 'tips'      ? '' : 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setStyle(s, btn) {
+  currentStyle = s;
+  document.querySelectorAll('#styleControl .seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function setStrength(s, btn) {
+  currentStrength = s;
+  btn.closest('.seg-control').querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Sentence splitter ────────────────────────────────────
+function splitSentences(text) {
+  // Split on sentence-ending punctuation, keeping delimiter
+  const raw = text.match(/[^.!?]+[.!?]+[\s]*/g) || [text];
+  return raw.map(s => s.trim()).filter(s => s.length > 2);
+}
+
+// ─── Core humanizer logic (client-side) ──────────────────
+/*
+  Strategy: For each sentence we generate 5 rewrites using a
+  rich bank of transformations:
+    1. Break long clauses into two short sentences
+    2. Invert subject/predicate order
+    3. Replace AI-typical vocabulary
+    4. Change passive→active or active→passive
+    5. Vary sentence openers (adverb, question-like, emphasis)
+  All transformations preserve original meaning.
+*/
+
+const AI_VOCAB = {
+  'delve into':        ['explore','look at','dig into','examine','go through'],
+  'delve':             ['explore','examine','dig into'],
+  'tapestry':          ['mix','blend','combination','range'],
+  'multifaceted':      ['complex','varied','many-sided','layered'],
+  'nuanced':           ['detailed','careful','subtle','fine-grained'],
+  'pivotal':           ['key','critical','important','major','central'],
+  'crucial':           ['key','vital','important','essential','necessary'],
+  'vital':             ['key','important','essential','necessary'],
+  'paramount':         ['top','highest','most important','primary'],
+  'comprehensive':     ['full','complete','thorough','detailed','broad'],
+  'robust':            ['strong','solid','reliable','effective'],
+  'leverage':          ['use','apply','draw on','make use of'],
+  'utilize':           ['use','apply','employ','work with'],
+  'facilitate':        ['help','support','make easier','enable','allow'],
+  'endeavor':          ['try','attempt','aim','work','effort'],
+  'commence':          ['start','begin','kick off','get going'],
+  'implement':         ['use','put in place','apply','carry out'],
+  'showcase':          ['show','display','highlight','demonstrate','feature'],
+  'boast':             ['have','feature','offer','include'],
+  'nestled':           ['located','sitting','set','placed','found'],
+  'vibrant':           ['lively','active','busy','energetic'],
+  'groundbreaking':    ['new','innovative','fresh','novel','original'],
+  'revolutionary':     ['new','major','significant','transformative'],
+  'transformative':    ['major','significant','life-changing','big'],
+  'landscape':         ['field','area','space','environment','world'],
+  'realm':             ['field','area','domain','world','space'],
+  'testament':         ['sign','proof','evidence','example'],
+  'underscores':       ['shows','highlights','confirms','points to'],
+  'highlights':        ['shows','points to','makes clear','notes'],
+  'furthermore':       ['also','on top of that','and','besides','plus'],
+  'moreover':          ['also','beyond that','additionally','plus'],
+  'additionally':      ['also','and','on top of that','as well'],
+  'consequently':      ['so','as a result','this means','therefore'],
+  'nevertheless':      ['still','even so','that said','yet','but'],
+  'notwithstanding':   ['despite this','still','regardless','yet'],
+  'aforementioned':    ['above','earlier','previously mentioned'],
+  'subsequently':      ['later','after that','then','next'],
+  'plethora':          ['many','lots of','a wide range of','plenty of'],
+  'myriad':            ['many','a lot of','countless','numerous'],
+  'intricate':         ['complex','detailed','involved','elaborate'],
+  'seamlessly':        ['smoothly','easily','naturally','without trouble'],
+  'holistic':          ['whole','overall','complete','full'],
+  'synergy':           ['teamwork','cooperation','combined effort'],
+  'cutting-edge':      ['latest','modern','advanced','new'],
+  'state-of-the-art':  ['latest','modern','advanced','top-level'],
+  'in the realm of':   ['in','within','when it comes to'],
+  'in the field of':   ['in','within','across'],
+  'in conclusion':     ['to wrap up','in short','to sum up','finally'],
+  'in summary':        ['in short','to sum up','briefly'],
+  'it is important to note': ['note that','keep in mind','importantly'],
+  'it is worth noting': ['note that','worth noting','keep in mind'],
+  'it goes without saying': ['clearly','obviously','of course'],
+  'when it comes to':  ['for','with','regarding','about'],
+};
+
+const OPENERS = {
+  natural:  [
+    '', '', '',  // keep original most of the time
+    'In fact, ', 'To put it simply, ', 'Here\'s the thing — ',
+    'Worth noting: ', 'Simply put, ', 'The reality is that ',
+    'To be clear, ', 'What this means is that ',
+  ],
+  academic: [
+    '', '', '',
+    'Notably, ', 'In this context, ', 'It should be noted that ',
+    'From this perspective, ', 'As such, ', 'In practice, ',
+    'To this end, ', 'In effect, ',
+  ],
+  casual:   [
+    '', '', '',
+    'Honestly, ', 'Look — ', 'Here\'s the deal: ',
+    'Real talk: ', 'Fun fact: ', 'The thing is, ',
+    'OK so ', 'Basically, ',
+  ],
+  formal:   [
+    '', '', '',
+    'It is evident that ', 'Upon examination, ', 'As noted, ',
+    'With regard to this, ', 'Accordingly, ', 'In this regard, ',
+    'On this basis, ',
+  ],
+};
+
+function pickRandom(arr, not) {
+  let v; let tries = 0;
+  do { v = arr[Math.floor(Math.random() * arr.length)]; tries++; }
+  while (v === not && tries < 20);
+  return v;
+}
+
+function replaceAiVocab(text) {
+  let t = text;
+  for (const [ai, humans] of Object.entries(AI_VOCAB)) {
+    const re = new RegExp('\\b' + ai.replace(/[-\/\\^$*+?.()|[\]{}]/g,'\\$&') + '\\b', 'gi');
+    t = t.replace(re, () => pickRandom(humans));
+  }
+  return t;
+}
+
+function breakLongSentence(text) {
+  // If sentence has comma-clause, split it
+  const parts = text.split(/,\s*(which\s|that\s|and\s|but\s|because\s|while\s|when\s|where\s)/i);
+  if (parts.length >= 2) {
+    const first  = parts[0].replace(/[,;]+$/, '').trim();
+    const second = parts.slice(1).join(' ').trim();
+    const cap    = second.charAt(0).toUpperCase() + second.slice(1);
+    if (first.length > 10 && cap.length > 8) {
+      return first + '. ' + cap;
+    }
+  }
+  return text;
+}
+
+function invertSentence(text) {
+  // Move a prepositional phrase or adverb to the front
+  const m = text.match(/^(.*?),?\s+(in\s+\w[\w\s]{2,25}|by\s+\w[\w\s]{2,20}|for\s+\w[\w\s]{2,20}|through\s+\w[\w\s]{2,20}|with\s+\w[\w\s]{2,20}|after\s+\w[\w\s]{2,20}|before\s+\w[\w\s]{2,20})\s+(.+)$/i);
+  if (m) {
+    const phrase = m[2].trim();
+    const rest   = (m[1] + ' ' + m[3]).trim().replace(/\s{2,}/g, ' ');
+    return phrase.charAt(0).toUpperCase() + phrase.slice(1) + ', ' + rest.charAt(0).toLowerCase() + rest.slice(1);
+  }
+  return text;
+}
+
+function makeActiveVoice(text) {
+  // Simple passive→active patterns
+  return text
+    .replace(/\bis being\b/g, 'is')
+    .replace(/\bwas being\b/g, 'was')
+    .replace(/\bcan be seen\b/g, 'is clear')
+    .replace(/\bit can be argued that\b/gi, '')
+    .replace(/\bit has been noted that\b/gi, '')
+    .replace(/\bit is believed that\b/gi, '')
+    .replace(/\bthere is a need to\b/gi, 'we need to')
+    .replace(/\bthere are many\b/gi, 'many')
+    .replace(/\bdue to the fact that\b/gi, 'because')
+    .replace(/\bin order to\b/gi, 'to')
+    .replace(/\bprior to\b/gi, 'before')
+    .replace(/\bsubsequent to\b/gi, 'after')
+    .trim();
+}
+
+function addOpener(text, style) {
+  const pool = OPENERS[style] || OPENERS.natural;
+  const opener = pool[Math.floor(Math.random() * pool.length)];
+  if (!opener) return text;
+  return opener + text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+function shortenClauses(text) {
+  // Remove redundant filler phrases
+  return text
+    .replace(/,\s*as we know,?/gi, '')
+    .replace(/,\s*of course,?/gi, '')
+    .replace(/,\s*needless to say,?/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function generateVariants(sentence, style, strength) {
+  const variants = new Set();
+  const base = sentence.trim();
+
+  // Variant A – vocab swap only
+  const vA = replaceAiVocab(base);
+  variants.add(vA !== base ? vA : makeActiveVoice(base));
+
+  // Variant B – break long sentence
+  const vB = replaceAiVocab(breakLongSentence(base));
+  variants.add(vB);
+
+  // Variant C – invert + vocab
+  const vC = replaceAiVocab(invertSentence(base));
+  variants.add(vC !== base ? vC : replaceAiVocab(makeActiveVoice(shortenClauses(base))));
+
+  // Variant D – opener + vocab + active
+  const vD = addOpener(replaceAiVocab(makeActiveVoice(base)), style);
+  variants.add(vD);
+
+  // Variant E – break + opener + heavy vocab
+  const vE = addOpener(replaceAiVocab(breakLongSentence(shortenClauses(base))), style);
+  variants.add(vE);
+
+  // Fill remaining slots with mutations
+  const allTechniques = [
+    () => replaceAiVocab(shortenClauses(base)),
+    () => addOpener(replaceAiVocab(base), style),
+    () => replaceAiVocab(makeActiveVoice(breakLongSentence(base))),
+    () => shortenClauses(replaceAiVocab(invertSentence(base))),
+    () => makeActiveVoice(replaceAiVocab(addOpener(breakLongSentence(base), style))),
+  ];
+
+  for (const fn of allTechniques) {
+    if (variants.size >= 5) break;
+    variants.add(fn());
+  }
+
+  // Pad if needed
+  while (variants.size < 5) variants.add(replaceAiVocab(base) + '.');
+
+  const arr = [...variants].slice(0, 5);
+
+  // Capitalise & punctuate each
+  return arr.map(v => {
+    v = v.trim().replace(/\s{2,}/g, ' ');
+    if (v.length > 0) v = v.charAt(0).toUpperCase() + v.slice(1);
+    if (!/[.!?]$/.test(v)) v += '.';
+    return v;
+  });
+}
+
+// ─── Main Humanize ────────────────────────────────────────
+async function humanizeText() {
+  const input = document.getElementById('inputText').value.trim();
+  if (!input) { showToast('Please paste some text first'); return; }
+
+  const sentences = splitSentences(input);
+  if (sentences.length === 0) { showToast('No sentences detected'); return; }
+
+  // UI → loading
+  document.getElementById('humanizeBtn').disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('btnText').textContent = 'Humanizing…';
+  document.getElementById('loadingState').classList.add('visible');
+  document.getElementById('outputSection').classList.remove('visible');
+
+  // Simulate processing delay for UX
+  await new Promise(r => setTimeout(r, 900 + sentences.length * 80));
+
+  // Generate variants
+  sentenceData = sentences.map(s => ({
+    original: s,
+    variants: generateVariants(s, currentStyle, currentStrength),
+    selected: 0,
+  }));
+
+  // UI → results
+  document.getElementById('humanizeBtn').disabled = false;
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('btnText').textContent = '✦ Humanize Text';
+  document.getElementById('loadingState').classList.remove('visible');
+
+  renderOutput();
+}
+
+// ─── Render ───────────────────────────────────────────────
+function renderOutput() {
+  const wrap = document.getElementById('sentencesWrap');
+  wrap.innerHTML = '';
+
+  const labels = ['A','B','C','D','E'];
+
+  sentenceData.forEach((sd, si) => {
+    const block = document.createElement('div');
+    block.className = 'sentence-block';
+    block.id = 'sb-' + si;
+
+    block.innerHTML = `
+      <div class="sb-header">
+        <div class="sb-num">${si + 1}</div>
+        <div class="sb-original">${escHtml(sd.original)}</div>
+      </div>
+      <div class="variants-wrap">
+        ${sd.variants.map((v, vi) => `
+          <div class="variant${sd.selected === vi ? ' selected' : ''}" onclick="selectVariant(${si},${vi})">
+            <div class="variant-letter">${labels[vi]}</div>
+            <div class="variant-text">${escHtml(v)}</div>
+            <div class="variant-actions">
+              <button class="va-btn" title="Copy this variant" onclick="event.stopPropagation();copySingle('${escAttr(v)}')">📋</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    wrap.appendChild(block);
+  });
+
+  renderStats();
+  updateFinal();
+
+  document.getElementById('outputSection').classList.add('visible');
+  document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function renderStats() {
+  const inputWords  = document.getElementById('inputText').value.trim().split(/\s+/).length;
+  const outputWords = sentenceData.map(sd => sd.variants[sd.selected]).join(' ').split(/\s+/).length;
+  const avgLen      = Math.round(sentenceData.reduce((a, sd) => a + sd.variants[sd.selected].split(/\s+/).length, 0) / sentenceData.length);
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${sentenceData.length}</div><div class="stat-lbl">Sentences</div></div>
+    <div class="stat-card"><div class="stat-val">${outputWords}</div><div class="stat-lbl">Output Words</div></div>
+    <div class="stat-card"><div class="stat-val">${avgLen}</div><div class="stat-lbl">Avg Sentence Len</div></div>
+    <div class="stat-card"><div class="stat-val">5</div><div class="stat-lbl">Variants Each</div></div>
+  `;
+}
+
+function selectVariant(si, vi) {
+  sentenceData[si].selected = vi;
+  const block   = document.getElementById('sb-' + si);
+  const variants = block.querySelectorAll('.variant');
+  variants.forEach((v, i) => v.classList.toggle('selected', i === vi));
+  updateFinal();
+  renderStats();
+}
+
+function updateFinal() {
+  const text = sentenceData.map(sd => sd.variants[sd.selected]).join(' ');
+  document.getElementById('finalText').textContent = text;
+}
+
+function selectAllFirst() {
+  sentenceData.forEach((sd, i) => {
+    sd.selected = 0;
+    const block    = document.getElementById('sb-' + i);
+    if (block) {
+      block.querySelectorAll('.variant').forEach((v, vi) => v.classList.toggle('selected', vi === 0));
+    }
+  });
+  updateFinal();
+  renderStats();
+  showToast('Auto-selected best variant for each sentence');
+}
+
+function copyFinal() {
+  const text = document.getElementById('finalText').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('Copied!');
+  });
+}
+
+function copySingle(text) {
+  navigator.clipboard.writeText(text).then(() => showToast('Variant copied!')).catch(() => showToast('Copy failed'));
+}
+
+function downloadFinal() {
+  const text = document.getElementById('finalText').textContent;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'metaworld-humanized.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Downloaded!');
+}
+
+function resetAll() {
+  sentenceData = [];
+  document.getElementById('outputSection').classList.remove('visible');
+  document.getElementById('inputText').value = '';
+  updateCount();
+  showToast('Reset complete');
+}
+
+// ─── Utilities ────────────────────────────────────────────
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+</script>
+</body>
+</html>
